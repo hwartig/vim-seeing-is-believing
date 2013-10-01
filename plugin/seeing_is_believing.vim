@@ -20,7 +20,7 @@ set cpo&vim
 " KEYMAP: {{{
 "=================================================================
 nnoremap <silent> <Plug>(seeing-is-believing-run)        :call seeing_is_believing#run('n')<CR>
-vnoremap <silent> <Plug>(seeing-is-believing-run)        :call seeing_is_believing#run('v')<CR>
+vnoremap <silent> <Plug>(seeing-is-believing-run-visual)        :call seeing_is_believing#visual()<CR>
 inoremap <silent> <Plug>(seeing-is-believing-run)   <C-o>:call seeing_is_believing#run('i')<CR>
 
 nnoremap <silent> <Plug>(seeing-is-believing-mark)      :call seeing_is_believing#toggle_mark('n')<CR>
