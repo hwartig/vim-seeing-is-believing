@@ -9,28 +9,35 @@ seeing_is_believing is a gem and can be installed with
 
     $ gem install seeing_is_believing
 
+Key Mappings
+==================================
+
+* `<Plug>(seeing-is-believing-mark)` - add mark (`# =>`) to the line.
+* `<Plug>(seeing-is-believing-run)` - run all marked lines.
+* `<Plug>(seeing-is-believing-mark-and-run)` - add mark to the line and run it.
+  If line is already marked, then previous mark will be replaced.
+
 Configuration
 ==================================
 vim-seeing-is-believing doesn't provide any default keymap.
 Set following line in your `.vimrc`
 
-    " Gvim
-    nmap <buffer> <M-r> <Plug>(seeing-is-believing-run)
-    xmap <buffer> <M-r> <Plug>(seeing-is-believing-run)
-    imap <buffer> <M-r> <Plug>(seeing-is-believing-run)
+```vim
+" Enable seeing-is-believing mappings only for Ruby
+augroup seeingIsBelievingSettings
+  autocmd!
 
-    nmap <buffer> <M-m> <Plug>(seeing-is-believing-mark)
-    xmap <buffer> <M-m> <Plug>(seeing-is-believing-mark)
-    imap <buffer> <M-m> <Plug>(seeing-is-believing-mark)
+  autocmd FileType ruby nmap <buffer> <Enter> <Plug>(seeing-is-believing-mark-and-run)
+  autocmd FileType ruby xmap <buffer> <Enter> <Plug>(seeing-is-believing-mark-and-run)
 
-    " Terminal
-    nmap <buffer> <F5> <Plug>(seeing-is-believing-run)
-    xmap <buffer> <F5> <Plug>(seeing-is-believing-run)
-    imap <buffer> <F5> <Plug>(seeing-is-believing-run)
+  autocmd FileType ruby nmap <buffer> <F4> <Plug>(seeing-is-believing-mark)
+  autocmd FileType ruby xmap <buffer> <F4> <Plug>(seeing-is-believing-mark)
+  autocmd FileType ruby imap <buffer> <F4> <Plug>(seeing-is-believing-mark)
 
-    nmap <buffer> <F4> <Plug>(seeing-is-believing-mark)
-    xmap <buffer> <F4> <Plug>(seeing-is-believing-mark)
-    imap <buffer> <F4> <Plug>(seeing-is-believing-mark)
+  autocmd FileType ruby nmap <buffer> <F5> <Plug>(seeing-is-believing-run)
+  autocmd FileType ruby imap <buffer> <F5> <Plug>(seeing-is-believing-run)
+augroup END
+```
 
 Kudos
 ==================================
