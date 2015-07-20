@@ -33,16 +33,14 @@ function! seeing_is_believing#toggle_mark(mode) range "{{{
       continue
     endif
 
-    let length = len(org_line)
-    let spaces = max - length
     let marked = strridx(org_line, s:mark_str)
-
     if marked != -1
       " remove mark and trailing spaces
-      let new_line = s:RemoveMark(org_line, marked)
+      let new_line = s:RemoveMark(org_line)
     else
       " add mark
-      let new_line = org_line . repeat(' ', spaces) . s:mark_str
+      let spaces = max - len(org_line)
+      let new_line = s:AddMark(org_line, spaces)
     endif
     call setline(line, new_line)
   endfor
@@ -53,7 +51,7 @@ function! seeing_is_believing#toggle_mark(mode) range "{{{
   redraw
 endfun "}}}
 
-function! seeing_is_believing#run_visual() range "{{{
+function! seeing_is_believing#mark_and_run_visual() range "{{{
   let [lnum1, col1] = getpos("'<")[1:2]
   let [lnum2, col2] = getpos("'>")[1:2]
   let lines = getline(lnum1, lnum2)
@@ -67,6 +65,19 @@ function! seeing_is_believing#run_visual() range "{{{
   call seeing_is_believing#run('n')
 endfun "}}}
 
+function! seeing_is_believing#mark_and_run() " {{{
+  let line_n = line('.')
+  let line = getline(line_n)
+  if empty(line)
+    return
+  endif
+
+  let line = s:RemoveMark(line)
+  let new_line = s:AddMark(line, 0)
+  call setline(line_n, new_line)
+  call seeing_is_believing#run('n')
+endfunction "}}}
+
 function! s:AnnotateLines(lines, max) "{{{
   let i = 0
 
@@ -75,10 +86,9 @@ function! s:AnnotateLines(lines, max) "{{{
     if empty(line)
       call add(new_lines, line)
     else
-      let mark_pos = strridx(line, s:mark_str)
-      let line = s:RemoveMark(line, mark_pos)
+      let line = s:RemoveMark(line)
       let spaces = a:max - len(line)
-      let new_line = line . repeat(' ', spaces) . s:mark_str
+      let new_line = s:AddMark(line, spaces)
       call add(new_lines, new_line)
     endif
   endfor
@@ -86,10 +96,15 @@ function! s:AnnotateLines(lines, max) "{{{
   return new_lines
 endfun "}}}
 
-function! s:RemoveMark(line, mark_position)
-  if a:mark_position >= 0
+function! s:AddMark(line, spaces)
+  return a:line . repeat(' ', a:spaces) . s:mark_str
+endfunction
+
+function! s:RemoveMark(line)
+  let mark_position = strridx(a:line, s:mark_str)
+  if mark_position >= 0
     " remove mark
-    let new_line = strpart(a:line, 0, a:mark_position)
+    let new_line = strpart(a:line, 0, mark_position)
     " remove trailing spaces
     let new_line = substitute(new_line, '\s\+$', '', '')
   else
