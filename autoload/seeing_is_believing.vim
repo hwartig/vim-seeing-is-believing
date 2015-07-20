@@ -24,6 +24,9 @@ function! seeing_is_believing#toggle_mark(mode) range "{{{
   set lazyredraw
   for line in range(a:firstline,a:lastline)
     let org_line = getline(line)
+    if empty(org_line)
+      continue
+    endif
     let marked = strridx(org_line, mark_str)
     let new_line = marked != -1
           \ ? strpart(org_line, 0, marked)
