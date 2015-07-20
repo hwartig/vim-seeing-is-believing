@@ -1,3 +1,5 @@
+let s:old_lazyredraw = &lazyredraw
+
 function! seeing_is_believing#run(mode) range "{{{
   if     a:mode == 'n'
     let range_str = '%'
@@ -13,7 +15,7 @@ function! seeing_is_believing#run(mode) range "{{{
   call setpos('.', wintop_pos)
   normal! zt
   call setpos('.', cursor_pos)
-  set nolazyredraw
+  let &lazyredraw = s:old_lazyredraw
   redraw
 endfun "}}}
 
@@ -36,7 +38,7 @@ function! seeing_is_believing#toggle_mark(mode) range "{{{
   call setpos('.', wintop_pos)
   normal zt
   call setpos('.', cursor_pos)
-  set nolazyredraw
+  let &lazyredraw = s:old_lazyredraw
   redraw
 endfun "}}}
 
