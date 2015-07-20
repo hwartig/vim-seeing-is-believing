@@ -1,4 +1,5 @@
 let s:old_lazyredraw = &lazyredraw
+let s:mark_str = ' # =>'
 
 function! seeing_is_believing#run(mode) range "{{{
   if     a:mode == 'n'
@@ -20,23 +21,33 @@ function! seeing_is_believing#run(mode) range "{{{
 endfun "}}}
 
 function! seeing_is_believing#toggle_mark(mode) range "{{{
-  let mark_str = " # =>"
   let cursor_pos = getpos(".")
   let wintop_pos = getpos('w0')
+  let lines = getline(a:firstline, a:lastline)
+  let max = GetMaxLength(lines)
+
   set lazyredraw
-  for line in range(a:firstline,a:lastline)
+  for line in range(a:firstline, a:lastline)
     let org_line = getline(line)
     if empty(org_line)
       continue
     endif
-    let marked = strridx(org_line, mark_str)
-    let new_line = marked != -1
-          \ ? strpart(org_line, 0, marked)
-          \ : org_line . mark_str
+
+    let length = len(org_line)
+    let spaces = max - length
+    let marked = strridx(org_line, s:mark_str)
+
+    if marked != -1
+      " remove mark
+      let new_line = strpart(org_line, 0, marked)
+    else
+      " add mark
+      let new_line = org_line . repeat(' ', spaces) . s:mark_str
+    endif
     call setline(line, new_line)
   endfor
   call setpos('.', wintop_pos)
-  normal zt
+  normal! zt
   call setpos('.', cursor_pos)
   let &lazyredraw = s:old_lazyredraw
   redraw
@@ -61,9 +72,9 @@ function! AnnotateLines(lines, max) "{{{
 
   while i < len(a:lines)
     let length = len(a:lines[i])
-    let spaces = (a:max - length) + 1
+    let spaces = a:max - length
     if length > 0
-      let a:lines[i] .= repeat(" ", spaces) . " # => "
+      let a:lines[i] .= repeat(" ", spaces) . s:mark_str
     endif
     let i += 1
   endwhile
@@ -85,5 +96,4 @@ function! GetMaxLength(lines) "{{{
 
   return max
 endfun "}}}
-
-
+" vim: foldmethod=marker
