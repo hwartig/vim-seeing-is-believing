@@ -29,7 +29,7 @@ function! seeing_is_believing#toggle_mark(mode) range "{{{
   set lazyredraw
   for line in range(a:firstline, a:lastline)
     let org_line = getline(line)
-    if empty(org_line)
+    if a:mode !=# 'n' && empty(org_line)
       continue
     endif
 
@@ -65,17 +65,17 @@ function! seeing_is_believing#mark_and_run_visual() range "{{{
   call seeing_is_believing#run('n')
 endfun "}}}
 
-function! seeing_is_believing#mark_and_run() " {{{
+function! seeing_is_believing#mark_and_run(mode) " {{{
   let line_n = line('.')
   let line = getline(line_n)
-  if empty(line)
+  if a:mode !=# 'n' && empty(line)
     return
   endif
 
   let line = s:RemoveMark(line)
   let new_line = s:AddMark(line, 0)
   call setline(line_n, new_line)
-  call seeing_is_believing#run('n')
+  call seeing_is_believing#run(a:mode)
 endfunction "}}}
 
 function! s:AnnotateLines(lines, max) "{{{
