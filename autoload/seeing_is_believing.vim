@@ -1,3 +1,6 @@
+let s:old_lazyredraw = &lazyredraw
+let s:mark_str = ' # =>'
+
 function! seeing_is_believing#run(mode) range "{{{
   if     a:mode == 'n'
     let range_str = '%'
@@ -13,37 +16,48 @@ function! seeing_is_believing#run(mode) range "{{{
   call setpos('.', wintop_pos)
   normal! zt
   call setpos('.', cursor_pos)
-  set nolazyredraw
+  let &lazyredraw = s:old_lazyredraw
   redraw
 endfun "}}}
 
 function! seeing_is_believing#toggle_mark(mode) range "{{{
-  let mark_str = " # =>"
-  let cursor_pos = getpos(".")
+  let cursor_pos = getpos('.')
   let wintop_pos = getpos('w0')
+  let lines = getline(a:firstline, a:lastline)
+  let max = s:GetMaxLength(lines)
+
   set lazyredraw
-  for line in range(a:firstline,a:lastline)
+  for line in range(a:firstline, a:lastline)
     let org_line = getline(line)
-    let marked = strridx(org_line, mark_str)
-    let new_line = marked != -1
-          \ ? strpart(org_line, 0, marked)
-          \ : org_line . mark_str
+    if a:mode !=# 'n' && empty(org_line)
+      continue
+    endif
+
+    let marked = strridx(org_line, s:mark_str)
+    if marked != -1
+      " remove mark and trailing spaces
+      let new_line = s:RemoveMark(org_line)
+    else
+      " add mark
+      let spaces = max - len(org_line)
+      let new_line = s:AddMark(org_line, spaces)
+    endif
     call setline(line, new_line)
   endfor
   call setpos('.', wintop_pos)
-  normal zt
+  normal! zt
   call setpos('.', cursor_pos)
-  set nolazyredraw
+  let &lazyredraw = s:old_lazyredraw
   redraw
 endfun "}}}
 
-function! seeing_is_believing#visual() range "{{{
+function! seeing_is_believing#mark_and_run_visual() range "{{{
   let [lnum1, col1] = getpos("'<")[1:2]
   let [lnum2, col2] = getpos("'>")[1:2]
   let lines = getline(lnum1, lnum2)
 
-  let max = GetMaxLength(lines)
-  let annotated_lines = AnnotateLines(lines, max)
+  let max = s:GetMaxLength(lines)
+  let annotated_lines = s:AnnotateLines(lines, max)
 
   let @x = join(annotated_lines, "\n")
   normal! gv
@@ -51,34 +65,66 @@ function! seeing_is_believing#visual() range "{{{
   call seeing_is_believing#run('n')
 endfun "}}}
 
-function! AnnotateLines(lines, max) "{{{
+function! seeing_is_believing#mark_and_run(mode) " {{{
+  let line_n = line('.')
+  let line = getline(line_n)
+  if a:mode !=# 'n' && empty(line)
+    return
+  endif
+
+  let line = s:RemoveMark(line)
+  let new_line = s:AddMark(line, 0)
+  call setline(line_n, new_line)
+  call seeing_is_believing#run(a:mode)
+endfunction "}}}
+
+function! s:AnnotateLines(lines, max) "{{{
   let i = 0
 
-  while i < len(a:lines)
-    let length = len(a:lines[i])
-    let spaces = (a:max - length) + 1
-    if length > 0
-      let a:lines[i] .= repeat(" ", spaces) . " # => "
+  let new_lines = []
+  for line in a:lines
+    if empty(line)
+      call add(new_lines, line)
+    else
+      let line = s:RemoveMark(line)
+      let spaces = a:max - len(line)
+      let new_line = s:AddMark(line, spaces)
+      call add(new_lines, new_line)
     endif
-    let i += 1
-  endwhile
+  endfor
 
-  return a:lines
+  return new_lines
 endfun "}}}
 
-function! GetMaxLength(lines) "{{{
+function! s:AddMark(line, spaces)
+  return a:line . repeat(' ', a:spaces) . s:mark_str
+endfunction
+
+function! s:RemoveMark(line)
+  let mark_position = strridx(a:line, s:mark_str)
+  if mark_position >= 0
+    " remove mark
+    let new_line = strpart(a:line, 0, mark_position)
+    " remove trailing spaces
+    let new_line = substitute(new_line, '\s\+$', '', '')
+  else
+    let new_line = a:line
+  endif
+  return new_line
+endfunction
+
+function! s:GetMaxLength(lines) "{{{
   let i = 0
   let max = 0
 
-  while i < len(a:lines)
-    let length = len(a:lines[i])
+  for line in a:lines
+    " don't count marks
+    let line =  substitute(line, '\s*# =>.*$', '', '')
+    let length = len(line)
     if length > max
       let max = length
     endif
-    let i += 1
-  endwhile
-
+  endfor
   return max
 endfun "}}}
-
-
+" vim: foldmethod=marker
