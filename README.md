@@ -36,6 +36,11 @@ augroup seeingIsBelievingSettings
 
   autocmd FileType ruby nmap <buffer> <F5> <Plug>(seeing-is-believing-run)
   autocmd FileType ruby imap <buffer> <F5> <Plug>(seeing-is-believing-run)
+  
+  " Based on mappings above: Select, mark and run all lines
+  autocmd FileType ruby nmap <buffer> <F6> ggVG<F4><F5>
+  autocmd FileType ruby imap <buffer> <F6> <Esc>ggVG<F4><F5>
+
 augroup END
 ```
 
